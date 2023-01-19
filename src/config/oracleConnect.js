@@ -20,17 +20,19 @@ module.exports.executeQueryReturnResult = async function (
 
       // connection = await this.getOracleConnection();
       queryTesting = queryManager.getGetById("649dbe90-eb05-4a86-b224-daaa6ca5d043"); 
-      let options = 
+      
+     
+
 
       if (connection) {
         console.log("Successfully connected to Oracle!");
         oracledb.fetchAsString = [oracledb.CLOB];
-        result = await connection.execute(
+        result = await connection.execute(queryTesting.sql, queryTesting.binds, queryTesting.options
           // queryTesting,[""],
           // queryManager.getGetById("649dbe90-eb05-4a86-b224-daaa6ca5d043"),
           // `select * from USER_REQUEST where id = "c6a65e8d-f743-4812-bef7-6edad56c4580" `,
           // `select * from USER_REQUEST where id = :id `,
-          "select * from USER_REQUEST where id = '649dbe90-eb05-4a86-b224-daaa6ca5d043' ",
+          // "select * from USER_REQUEST where id = '649dbe90-eb05-4a86-b224-daaa6ca5d043' ",
           // ["649dbe90-eb05-4a86-b224-daaa6ca5d043"],
           // [
           //   // {
@@ -43,9 +45,7 @@ module.exports.executeQueryReturnResult = async function (
           //     },
           //   },
           // ],
-          {
-            outFormat: oracledb.OBJECT,
-          }
+          // options
         );
         returnObject.status = "00";
         returnObject.message = "success";
