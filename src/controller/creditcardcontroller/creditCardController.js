@@ -3,7 +3,6 @@ const { queueRequests } = require('oracledb');
 const dbConfig = require("../../config/oracleConnect")
 
 router.get("/myhello", (req, res) => {
-    //   res.header("Access-Control-Allow-Origin", "*");
     console.log(req.body);
     res.send("Hello World!");
   });
