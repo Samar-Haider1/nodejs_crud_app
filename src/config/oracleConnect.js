@@ -27,29 +27,15 @@ module.exports.executeQueryReturnResult = async function (
       if (connection) {
         console.log("Successfully connected to Oracle!");
         oracledb.fetchAsString = [oracledb.CLOB];
-        result = await connection.execute(queryTesting.sql, queryTesting.binds, queryTesting.options
-          // queryTesting,[""],
-          // queryManager.getGetById("649dbe90-eb05-4a86-b224-daaa6ca5d043"),
-          // `select * from USER_REQUEST where id = "c6a65e8d-f743-4812-bef7-6edad56c4580" `,
-          // `select * from USER_REQUEST where id = :id `,
-          // "select * from USER_REQUEST where id = '649dbe90-eb05-4a86-b224-daaa6ca5d043' ",
-          // ["649dbe90-eb05-4a86-b224-daaa6ca5d043"],
-          // [
-          //   // {
-          //   //   splitResults: true, //True to enable to split the results into bulks, each bulk will invoke the provided callback (last callback invocation will have empty results)
-          //   //   bulkRowsAmount: 100, //The amount of rows to fetch (for splitting results, that is the max rows that the callback will get for each callback invocation)
-          //   // },
-          //   {
-          //     fetchInfo: {
-          //       USER_REQUEST: { type: oracledb.OBJECT },
-          //     },
-          //   },
-          // ],
-          // options
-        );
+        result = await connection.execute(queryTesting.sql, 
+                                          queryTesting.binds, 
+                                          queryTesting.options
+                                          );
         returnObject.status = "00";
         returnObject.message = "success";
+        result.rows[0].USER_REQUEST = (0, eval)('(' + result.rows[0].USER_REQUEST + ')');
         returnObject.data = result;
+
         resolve(returnObject);
       } else {
         returnObject.status = "01";

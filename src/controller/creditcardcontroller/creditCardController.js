@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { queueRequests } = require('oracledb');
 const dbConfig = require("../../config/oracleConnect")
 
 router.get("/myhello", (req, res) => {
@@ -10,15 +11,22 @@ router.get("/myhello", (req, res) => {
 
 router.get("/getidinfo", async(req, res) => {
   
-    //   res.header("Access-Control-Allow-Origin", "*");
-    
-    
     try {
       console.log(req.body);
-      getidinfo_working("");
-      res.send("Hello World!");  
-    } catch (error) {
+      let workingResponse = await getidinfo_working("");
       
+      if(workingResponse.status == "00"){
+        res.send(workingResponse.data.rows  )
+        res.end();
+      }else {
+        res.send(queueRequests);
+        res.end();
+      }
+      
+    } catch (error) {
+      console.log(error);
+      res.send("Error");
+      res.end();  
     }
 });
 
@@ -28,11 +36,12 @@ async function getidinfo_working(identifier){
       const getConnection = await dbConfig.getOracleConnection();
       const getQueryResults = await dbConfig.executeQueryReturnResult(getConnection.data);
   
+      
 
-      getQueryResults.data.rows[0].USER_REQUEST = (0, eval)('(' + getQueryResults.data.rows[0].USER_REQUEST + ')');
-      console.log(getQueryResults.data.rows[0]);
+      // getQueryResults.data.rows[0].USER_REQUEST = (0, eval)('(' + getQueryResults.data.rows[0].USER_REQUEST + ')');
+      console.log(getQueryResults);
 
-
+      resolve(getQueryResults)
 
     } catch (error) {
       
