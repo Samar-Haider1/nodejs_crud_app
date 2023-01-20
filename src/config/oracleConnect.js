@@ -11,18 +11,7 @@ module.exports.executeQueryReturnResult = async function (
     let connection = inComingConnection;
     let queryTesting = null;
     try {
-      // connection = await oracledb.getConnection({
-      //   user: "btuser",
-      //   password: "btuser",
-      //   connectString:
-      //     "(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1522))(CONNECT_DATA =(SID= XE)))",
-      // });
-
-      // connection = await this.getOracleConnection();
       queryTesting = queryManager.getGetById("649dbe90-eb05-4a86-b224-daaa6ca5d043"); 
-      
-     
-
 
       if (connection) {
         console.log("Successfully connected to Oracle!");
@@ -41,7 +30,6 @@ module.exports.executeQueryReturnResult = async function (
         returnObject.status = "01";
         returnObject.message = "Connection Error";
       }
-      // console.log(JSON.stringify(result));
       resolve(returnObject);
     } catch (err) {
       console.log("Error: ", err);
@@ -81,4 +69,3 @@ module.exports.getOracleConnection = async function () {
     }
   });
 };
-// module.exports = oraclePromisify();
