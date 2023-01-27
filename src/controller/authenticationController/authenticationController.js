@@ -28,26 +28,32 @@ router.post("/login", async (req, res) => {
 })
 
 router.get("/verifyToken",async(req,res)=>{
+    
+    const dbConnection = await dbConfig.getOracleConnection();
     let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
     let jwtSecretKey = process.env.JWT_SECRET_KEY;
     let queryTesting = null;
-    const dbConnection = await dbConfig.getOracleConnection();
-
     try {
         const token = req.headers.authorization.split(" ")[1];
-        queryTesting = queryManager.verifyUserToken({EMAIL:"dev@mail.com"});        
+        queryTesting = queryManager.verifyUserToken({EMAIL:req.body.EMAIL});        
         queryresult = await dbConnection.data.execute(queryTesting.sql,queryTesting.binds,queryTesting.options);
-            debugger        
         const verified = queryresult.rows[0].TOKEN === token
         if(verified){
-            return res.send("Successfully Verified");
+            const tokenExpiry = jwt.verify(token, jwtSecretKey);
+            if(tokenExpiry){
+                return res.send("Successfully Verified");
+            }else{
+                // Access Denied
+                return res.status(401).send(error);
+            }
+    
         }else{
-            // Access Denied
-            return res.status(401).send(error);
+            return res.send("Access Denied");
+
         }
     } catch (error) {
         // Access Denied
-        return res.status(401).send(error);
+        return res.status(401).send("Access Denied");
     }
       
 })
@@ -85,7 +91,7 @@ return new Promise(async (resolve,reject)=>{
                 const token = jwt.sign(
                   data,
                   jwtSecretKey,
-                  { expiresIn: "24h" });
+                  { expiresIn: "90s" });
                   const date = new Date();
                   queryTesting = queryManager.userEntries({...queryParams,TOKEN:token,LAST_LOGIN:date});                
                   queryresult = await connection.execute(queryTesting.sql,queryTesting.binds,queryTesting.options);
@@ -99,25 +105,14 @@ return new Promise(async (resolve,reject)=>{
                     returnObject.status = "01";
                     returnObject.message="Something Went Wrong";
                     returnObject.data = {}
-
-                  }
-                
-                // returnObject.status = "00";
-                // returnObject.message="Login Success";
-                // returnObject.data = {...result.rows[0]}
-    
+                  }    
             }else{
                 returnObject.status = "01";
                 returnObject.message="Login Failed";
                 returnObject.data = {}    
             }
-            // returnObject.status = "00";
-            // returnObject.message="success";
-            // returnObject.data = result.rows
             resolve(returnObject);
-
         } else {
-            
             returnObject.status = "01";
             returnObject.message = "Connection Error";
             resolve(returnObject);
