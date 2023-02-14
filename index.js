@@ -1,7 +1,7 @@
 // import {fileTypeFromFile} from 'file-type';
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
+const express = require("express"); // import express 
+const app = express(); // destruct app object from express library
+const bodyParser = require("body-parser"); // body parser is a middleware process to send data to a http body in 4 types, JSON, raw data, text, url-endocded 
 var oracleConnect = require("./src/config/oracleConnect")
 
 // const fileTypeFromFile = require("file-type");
@@ -11,9 +11,9 @@ var oracledb = require("oracledb");
 
 
 
-const port = 4021;
+const port = 4021; // add port where app listening
 
-app.use(function (req, res, next) {
+app.use(function (req, res, next) { // in which we add some app header functionality 
   //   res.header("Access-Control-Allow-Origin", "localhost"); // update to match the domain you will make the request from
   res.header(
     // "Access-Control-Allow-Headers",
@@ -35,7 +35,17 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use(bodyParser.urlencoded({ extended: true }));
+
+// calling body-parser to handle the Request Object from POST requests
+//---> var bodyParser = require('body-parser');
+// parse application/json, basically parse incoming Request Object as a JSON Object 
+// ---> app.use(bodyParser.json());
+// parse application/x-www-form-urlencoded, basically can only parse incoming Request Object if strings or arrays
+// ---> app.use(bodyParser.urlencoded({ extended: false }));
+// combines the 2 above, then you can parse incoming Request Object if object, with nested objects, or generally any type.
+// ---> app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(bodyParser.urlencoded({ extended: true })); //
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 

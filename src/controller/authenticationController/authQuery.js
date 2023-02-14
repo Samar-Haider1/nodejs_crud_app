@@ -1,32 +1,67 @@
 var oracledb = require("oracledb");
 
-module.exports.userLogin = function({EMAIL,PASSWORD}){
+module.exports.userLogin = function({KEY1,KEY2}){
+    let sql = `select * from BTUSER.JWT_USER where KEY1= :KEY1 and KEY2= :KEY2 order by CREATED_DATETIME DESC`;
+    // let sql = `select TOKEN, IS_NEW_USER from BTUSER.JWT_USER where EMAIL= :EMAIL and PASSWORD= :PASSWORD`;
 
-    let sql = `select TOKEN from BTUSER.JWT_USER where EMAIL= :EMAIL and PASSWORD= :PASSWORD`;
-
-    let binds = {":EMAIL": EMAIL,":PASSWORD": PASSWORD};
+    let binds = {":KEY1": KEY1,":KEY2": KEY2};
     let options = {
       outFormat:oracledb.OBJECT
     }
     return { sql,binds,options}
   }
-  // module.exports.userEntries = function({ID=3,ATTEMPTS=1,EMAIL,TOKEN,IS_ACTIVE=1,LAST_LOGIN,PASSWORD}){
+module.exports.rdaAccountAuth = function({KEY1,KEY2}){
 
-  module.exports.userEntries = function({EMAIL,TOKEN,LAST_LOGIN,PASSWORD}){
-  let sql = `INSERT INTO BTUSER.JWT_USER (ID,ATTEMPTS,EMAIL,TOKEN,IS_ACTIVE,LAST_LOGIN,PASSWORD) VALUES('4',1,:EMAIL,:TOKEN,1,:LAST_LOGIN,:PASSWORD)`;
-  let binds = {":EMAIL": EMAIL,":TOKEN":TOKEN,":LAST_LOGIN":LAST_LOGIN,":PASSWORD": PASSWORD};
+    let sql = `select * from BTUSER.RDA_ACCOUNT_PERSONAL where RDA_ID= :KEY1 and ID_DOCUMENT_NUMBER= :KEY2`;
+    let binds = {":KEY1": KEY1,":KEY2": KEY2};
+    let options = {
+      outFormat:oracledb.OBJECT
+    }
+    return { sql,binds,options}
+  }
+
+  module.exports.userEntries = function({KEY1,TOKEN,ID,KEY2,IS_NEW_USER,CREATED_DATETIME,TYPE}){
+  let sql = `INSERT INTO BTUSER.JWT_USER (ID,KEY1,TOKEN,KEY2,IS_NEW_USER,CREATED_DATETIME,TYPE) VALUES(:ID,:KEY1,:TOKEN,:KEY2,:IS_NEW_USER,:CREATED_DATETIME,:TYPE)`;
+  let binds = {":KEY1": KEY1,":TOKEN":TOKEN,":ID":ID,":KEY2": KEY2,":IS_NEW_USER":IS_NEW_USER,":CREATED_DATETIME":CREATED_DATETIME,":TYPE":TYPE};
   let options = {
     outFormat:oracledb.OBJECT
   }
   return { sql,binds,options}
 }
 
-module.exports.verifyUserToken = function({EMAIL}){
-    // let sql = `Update BTUSER.JWT_USER set TOKEN= :TOKEN, ATTEMPTS= ATTEMPTS+1,LAST_LOGIN= :LAST_LOGIN where EMAIL= :EMAIL`;
-    let sql = `select * from BTUSER.JWT_USER where EMAIL= :EMAIL order by LAST_LOGIN DESC`;   
-    let binds = {":EMAIL": EMAIL,};
+module.exports.verifyUserToken = function({KEY1}){
+    let sql = `select * from BTUSER.JWT_USER where KEY1= :KEY1 ORDER BY CREATED_DATETIME DESC`;   
+    let binds = {":KEY1": KEY1};
     let options = {
       outFormat:oracledb.OBJECT
     }
     return { sql,binds,options}
   }
+
+  module.exports.generateUser = function({KEY1,ID,KEY2,IS_NEW_USER,CREATED_DATETIME,TYPE}){
+    let sql = `INSERT INTO BTUSER.JWT_USER (ID,KEY1,TOKEN,KEY2,IS_NEW_USER,CREATED_DATETIME,TYPE) VALUES(:ID,:KEY1,'',:KEY2,:IS_NEW_USER,:CREATED_DATETIME,:TYPE)`;
+    let binds = {":KEY1": KEY1,":ID":ID,":KEY2": KEY2,":IS_NEW_USER":IS_NEW_USER,":CREATED_DATETIME":CREATED_DATETIME,":TYPE":TYPE};
+        let options = {
+        outFormat:oracledb.OBJECT
+      }
+      return { sql,binds,options}
+}
+
+
+module.exports.changePassword = function({KEY2,KEY1,IS_NEW_USER}){
+      let sql = `UPDATE BTUSER.JWT_USER SET KEY2= :KEY2, IS_NEW_USER= :IS_NEW_USER WHERE KEY1= :KEY1`;
+      let binds = {":KEY2":KEY2,":IS_NEW_USER":IS_NEW_USER,":KEY1": KEY1};
+      let options = {
+        outFormat:oracledb.OBJECT
+      }
+      return { sql,binds,options}
+}
+
+module.exports.sessionEntries = function(){
+  let sql = `select COUNT(*) TOTAL_ENTRIES from BTUSER.JWT_USER`;   
+  let binds = {};
+  let options = {
+    outFormat:oracledb.OBJECT
+  }
+  return { sql,binds,options}
+}
