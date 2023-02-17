@@ -11,7 +11,7 @@ var oracledb = require("oracledb");
 
 
 
-const port = 4021; // add port where app listening
+const port = 4000; // add port where app listening
 
 app.use(function (req, res, next) { // in which we add some app header functionality 
   //   res.header("Access-Control-Allow-Origin", "localhost"); // update to match the domain you will make the request from
