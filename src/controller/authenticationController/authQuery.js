@@ -49,13 +49,13 @@ module.exports.verifyUserToken = function({KEY1}){
 
 
 module.exports.changePassword = function({KEY2,KEY1,IS_NEW_USER}){
-      let sql = `UPDATE BTUSER.JWT_USER SET KEY2= :KEY2, IS_NEW_USER= :IS_NEW_USER WHERE KEY1= :KEY1`;
-      let binds = {":KEY2":KEY2,":IS_NEW_USER":IS_NEW_USER,":KEY1": KEY1};
-      let options = {
+  let sql = `UPDATE BTUSER.JWT_USER SET KEY2= :KEY2, IS_NEW_USER= :IS_NEW_USER WHERE KEY1= :KEY1`;
+  let binds = {":KEY2":KEY2,":IS_NEW_USER":IS_NEW_USER,":KEY1": KEY1};
+  let options = {
         outFormat:oracledb.OBJECT
       }
       return { sql,binds,options}
-}
+    }
 
 module.exports.sessionEntries = function(){
   let sql = `select COUNT(*) TOTAL_ENTRIES from BTUSER.JWT_USER`;   
@@ -64,4 +64,12 @@ module.exports.sessionEntries = function(){
     outFormat:oracledb.OBJECT
   }
   return { sql,binds,options}
+}
+module.exports.generateOtpQuery = function({ID,EMAIL,CREATED_DATETIME,OTP,IS_OTP_VERIFIED}){
+  let sql = `INSERT INTO BTUSER.JWT_USER (ID,EMAIL,CREATED_DATETIME,OTP,IS_OTP_VERIFIED) VALUES(:ID,:EMAIL,:CREATED_DATETIME,:OTP,:IS_OTP_VERIFIED)`;
+  let binds = {":ID":ID,":EMAIL":EMAIL,":CREATED_DATETIME":CREATED_DATETIME,":OTP":OTP,":IS_OTP_VERIFIED":IS_OTP_VERIFIED};
+      let options = {
+      outFormat:oracledb.OBJECT
+    }
+    return { sql,binds,options}
 }

@@ -3,19 +3,70 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 var queryManager = require('./authQuery');
 const { emailRegex } = require('../../util');
+const otpGenerate = require("../../util/otpgenerator");
+var nodemailer = require('nodemailer');
 
 dotenv.config(`${process.env.SECRET_KEY}`);
 
-
-async function generateOtp(params) {
-    return new Promise(async (resolve,reject)=>{
+async function sendOtpToEmail({email}){
+    return new Promise(async(resolve,reject)=>{
         try {
-        console.log(params);
+            const otp = await otpGenerate();
+            const sendmail = await sendEmail({otp,email})
+            if(sendmail){
+                //DB query for add otp in db with email
+            }else{
+
+            }
         } catch (error) {
             
         }
     })
- }
+}
+
+async function sendEmail(params){
+    return new Promise(function (resolve, reject) {
+       const {email,otp} = params
+        var transport = nodemailer.createTransport({
+            host: "20.10.1.25",
+            port: 25,
+            auth: {
+                user: "noreply@jsbl.com",
+                pass: "tbKm86Ti"
+            },
+            tls: { rejectUnauthorized: false },
+        });
+
+        var mailOptions = {
+            from: 'noreply@jsbl.com',
+            to: email,
+            subject: "OTP Verification",
+            text: "",
+            html: '<b>Hi!</b> </br> Please use the following One Time Password (OTP) to access the Portal. : '+otp+'. Do not share this OTP with anyone. This OTP will expire after 3 minutes.',
+        };
+        transport.sendMail(mailOptions, (error, info) => {
+            return error ? false : true 
+        });
+
+    });    
+}
+
+async function generateOtp(params) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const dbConnection = await dbConfig.getOracleConnection();
+            const sendOtpBool = await sendOtpToEmail(params.body);
+            // const getQueryResults = await queryManager.generateOtpQuery(dbConnection.data, params);
+            // const getQueryResults = await queryManager.generateOtpQuery(dbConnection.data, params);
+            // resolve(getQueryResults)
+        } catch (error) {
+            resolve({ status: "01", message: "Something went wrong." })
+
+        }
+    })
+}
+
+
 async function verifyUserToken(token) {
     return new Promise(async (resolve, reject) => {
 
@@ -277,4 +328,4 @@ async function registerUserExecution(inComingConnection, queryParams) {
     })
 }
 
-module.exports = {generateOtp,verifyUserToken,loginwithJWT,passwordChange,registerUser}
+module.exports = { generateOtp, verifyUserToken, loginwithJWT, passwordChange, registerUser }
