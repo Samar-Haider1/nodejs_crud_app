@@ -5,6 +5,8 @@ var queryManager = require('./authQuery');
 const { emailRegex } = require('../../util');
 const otpGenerate = require("../../util/otpgenerator");
 var nodemailer = require('nodemailer');
+const knex = require("../../config/connection");
+const { getTableName } = require("../../models/authUser/AuthUserModel");
 
 dotenv.config(`${process.env.SECRET_KEY}`);
 
@@ -202,6 +204,73 @@ async function authenticationExecuteQuery(inComingConnection, queryParams) {
         }
     })
 }
+async function authenORM(queryParams) {
+    var returnObject = { status: "", data: "", message: "" };
+    return new Promise(async (resolve, reject) => {
+        try {
+            let response ={} 
+            debugger
+            if (queryParams.TYPE == 'auth') {
+                if (emailRegex(queryParams.KEY1)) {
+                    response = await knex(getTableName())
+                    .where({ "KEY1": queryParams.KEY1, "KEY2": queryParams.KEY2 })
+                    .orderBy('CREATED_DATETIME', 'desc')
+                    } else {
+                    throw new Error("error")
+                }
+            } else {
+                // queryTesting = queryManager.rdaAccountAuth(queryParams);
+
+                response = await knex("RDA_ACCOUNT_PERSONAL")
+                .where({ "RDA_ID": queryParams.KEY1, "ID_DOCUMENT_NUMBER": queryParams.KEY2 })
+
+                debugger
+            }
+                const item = response[0]
+                if (response.length > 0) {
+
+                    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+                    let data = {
+                        key: queryParams.KEY1,
+                        time: Date(),
+                    }
+                    const token = jwt.sign(
+                        data,
+                        jwtSecretKey,
+                        { expiresIn: "1h" });
+                    const date = new Date();
+
+                    res = await queryManager.sessionEntriesCount();
+                    const obj = {...queryParams, ID: res?.data[0]?.TOTAL_ENTRIES + 1, TOKEN: token, CREATED_DATETIME: date, IS_NEW_USER: item.IS_NEW_USER}
+                    const response = await knex('JWT_USER').insert(obj)
+                    if (response===1) {
+                        returnObject.status = "00";
+                        returnObject.message = "Login Success";
+                        const obj = item.IS_NEW_USER === 1 ? { isChangePsd: true } : {}
+
+
+                        returnObject.data = { TOKEN: token, ...obj }
+
+                    } else {
+                        returnObject.status = "01";
+                        returnObject.message = "Something Went Wrong";
+                        returnObject.data = {}
+                    }
+                } else {
+                    returnObject.status = "01";
+                    returnObject.message = "Login Failed";
+                    returnObject.data = {}
+                }
+                resolve(returnObject);
+
+        } catch (err) {
+            returnObject.status = "99";
+            returnObject.message = "Something Went Wrong ";
+            resolve(returnObject);
+
+        } 
+    })
+}
 async function passwordChange(params) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -328,4 +397,4 @@ async function registerUserExecution(inComingConnection, queryParams) {
     })
 }
 
-module.exports = { generateOtp, verifyUserToken, loginwithJWT, passwordChange, registerUser }
+module.exports = { generateOtp, verifyUserToken, loginwithJWT, passwordChange, registerUser, authenORM }

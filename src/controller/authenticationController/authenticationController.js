@@ -1,9 +1,26 @@
 const router = require('express').Router();
-const { getAuthorizeToken} = require('../../util');
-var {generateOtp,verifyUserToken,loginwithJWT,passwordChange,registerUser} = require('./features')
+const { getAuthorizeToken } = require('../../util');
+var { generateOtp, verifyUserToken, loginwithJWT, passwordChange, registerUser, authenORM } = require('./features')
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const knex = require('../../config/connection');
+const { getTableName } = require('../../models/authUser/AuthUserModel');
 
+router.post("/login", async (req, res) => {
+    try {
+
+        // let response = await loginwithJWT(req.body);
+
+        let response = await authenORM(req.body)
+        res.send(response);
+
+
+    } catch (error) {
+        res.send("Error");
+        res.end();
+
+    }
+})
 router.post("/authentication", async (req, res) => {
     try {
         let response = await loginwithJWT(req.body);
