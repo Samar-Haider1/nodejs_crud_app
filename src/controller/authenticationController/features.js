@@ -209,25 +209,17 @@ async function authenORM(queryParams) {
     return new Promise(async (resolve, reject) => {
         try {
             let response ={} 
-            debugger
             if (queryParams.TYPE == 'auth') {
                 if (emailRegex(queryParams.KEY1)) {
-                    response = await knex(getTableName())
-                    .where({ "KEY1": queryParams.KEY1, "KEY2": queryParams.KEY2 })
-                    .orderBy('CREATED_DATETIME', 'desc')
+                    response = await queryManager.loginUser(queryParams);
                     } else {
                     throw new Error("error")
                 }
             } else {
-                // queryTesting = queryManager.rdaAccountAuth(queryParams);
-
-                response = await knex("RDA_ACCOUNT_PERSONAL")
-                .where({ "RDA_ID": queryParams.KEY1, "ID_DOCUMENT_NUMBER": queryParams.KEY2 })
-
-                debugger
+                response = await queryManager.rdaAuthLogin(queryParams)
             }
-                const item = response[0]
-                if (response.length > 0) {
+                const item = response.data[0]
+                if ( response.data.length > 0) {
 
                     let jwtSecretKey = process.env.JWT_SECRET_KEY;
                     let data = {
@@ -242,13 +234,11 @@ async function authenORM(queryParams) {
 
                     res = await queryManager.sessionEntriesCount();
                     const obj = {...queryParams, ID: res?.data[0]?.TOTAL_ENTRIES + 1, TOKEN: token, CREATED_DATETIME: date, IS_NEW_USER: item.IS_NEW_USER}
-                    const response = await knex('JWT_USER').insert(obj)
-                    if (response===1) {
+                    const resp = await knex('JWT_USER').insert(obj)
+                    if (resp===1) {
                         returnObject.status = "00";
                         returnObject.message = "Login Success";
                         const obj = item.IS_NEW_USER === 1 ? { isChangePsd: true } : {}
-
-
                         returnObject.data = { TOKEN: token, ...obj }
 
                     } else {

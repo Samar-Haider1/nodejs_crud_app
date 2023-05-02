@@ -77,24 +77,37 @@ module.exports.generateOtpQuery = function ({ ID, EMAIL, CREATED_DATETIME, OTP, 
 module.exports.loginUser = async function ({ KEY1, KEY2 }) {
   return new Promise(async (resolve, reject) => {
     await knex(getTableName()).where({ "KEY1": KEY1, "KEY2": KEY2 })
-    .orderBy('CREATED_DATETIME', 'desc').then((response) => {
+      .orderBy('CREATED_DATETIME', 'desc').then((response) => {
 
-      resolve({ status: "00", message: "Success", data: response })
+        resolve({ status: "00", message: "Success", data: response })
+      })
+      .catch((err) => {
+        resolve({ status: "01", message: "Connection Error" })
+      })
   })
-  .catch((err) => {
-    resolve({ status: "01", message: "Connection Error" })
-  })
+}
+module.exports.rdaAuthLogin = async function ({ KEY1, KEY2 }) {
+  return new Promise(async (resolve, reject) => {
+    knex("RDA_ACCOUNT_PERSONAL")
+      .where({ "RDA_ID": KEY1, "ID_DOCUMENT_NUMBER": KEY2 })
+      .then((response) => {
+
+        resolve({ status: "00", message: "Success", data: response })
+      })
+      .catch((err) => {
+        resolve({ status: "01", message: "Connection Error" })
+      })
   })
 }
 
 module.exports.sessionEntriesCount = async function () {
   return new Promise(async (resolve, reject) => {
-    await knex(getTableName()).count('*',{as:'TOTAL_ENTRIES'})
-    .then((response) => {
-      resolve({ status: "00", message: "Success", data: response })
-  })
-  .catch((err) => {
-    resolve({ status: "01", message: "Connection Error" })
-  })
+    await knex(getTableName()).count('*', { as: 'TOTAL_ENTRIES' })
+      .then((response) => {
+        resolve({ status: "00", message: "Success", data: response })
+      })
+      .catch((err) => {
+        resolve({ status: "01", message: "Connection Error" })
+      })
   })
 }
